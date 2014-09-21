@@ -1,98 +1,165 @@
-function drawPDF(element, url) {
-    // a really tiny debounce function that i stole from a tutorial
-    function debounce(a,b,c){var d;return function(){var e=this,f=arguments;clearTimeout(d),d=setTimeout(function(){d=null,c||a.apply(e,f)},b),c&&!d&&a.apply(e,f)}}
-    // variables
-    var thePDF           = null;  // reference to the pdf.js object
-    var numPages         = 0;     // number of pages in the pdf
-    var elementWidth     = 0;
-    var rendering        = false; // flag - are we currently rendering pages to canvas?
-    var cancelRendering  = false; // flag - has another process requested that we stop rendering?
-    var renderWaitTimer  = null;  // reference to timeout to deduplicate calls to render
-    // make pdf.js object from url of pdf (not CORS compliant)
+var pdfRenderingTask = false;
+
+function initializePDF(element, pagebar, url, layout) {
     PDFJS.getDocument(url).then(function(pdf) {
-        // store a couple variables
-        thePDF   = pdf;
-        numPages = pdf.numPages;
-        // make canvases for the pages
-        for(i = 0; i < numPages; i++ ) {
-            var canvas    = document.createElement( "canvas" );
-            canvas.width  = $(element).width()*2;
-            canvas.height = 20;
-            $(element).append( canvas );
-        }
-        //populate the canvases
-        renderPDF();
-        
-        // register event handlers
-        //debounce input to reduce memory usage
-        var debouncedRender = debounce(function(){renderPDF();},250);
-        $(window).on("orientationchange resize zoomPDF", debouncedRender);
+        $(element).data('pdf',pdf);
+        $(element).data('num-pages', pdf.numPages);
+        $(element).data('current-page', 0);
+        $(element).data('last-width', $(element).width());
+        $(element).attr('class', numberToLayout(layout));
+        setActiveLayout(pagebar, layout);
+        renderPDF(pdf, element, pagebar, 0);
+        // Register events
+        // - Layout Events
+        $(pagebar).find('.pdf-layout-single').click(function(e) {
+            $(element).removeClass();
+            $(element).addClass('one-page');
+            renderPDF(pdf, element, pagebar, 0);
+            updateDefaultLayout(0);
+            setActiveLayout(pagebar, 0);
+            e.preventDefault();
+        });
+        $(pagebar).find('.pdf-layout-double-odd').click(function(e) {
+            $(element).removeClass();
+            $(element).addClass('two-page-odd');
+            renderPDF(pdf, element, pagebar, 0);
+            updateDefaultLayout(1);
+            setActiveLayout(pagebar, 1);
+            e.preventDefault();
+        });
+        $(pagebar).find('.pdf-layout-double-even').click(function(e) {
+            $(element).removeClass();
+            $(element).addClass('two-page-even');
+            renderPDF(pdf, element, pagebar, 0);
+            updateDefaultLayout(2);
+            setActiveLayout(pagebar, 2);
+            e.preventDefault();
+        });
+        // - Resize Events
+        $(window).bind('orientationchange resize', function() {
+            if($(element).width() != $(element).data('last-width')) {
+                $(element).data('last-width', $(element).width());
+                renderPDF(pdf, element, pagebar, 0);
+            }
+        });
+        $(element).bind('pdf-page-next', function() {
+            renderPDF(pdf, element, pagebar, 1);
+        });
+        $(element).bind('pdf-page-prev', function() {
+            renderPDF(pdf, element, pagebar, -1);
+        });
+        $(pagebar).find('.pdf-page-next').click(function(e) {
+            renderPDF(pdf, element, pagebar, 1);
+            e.preventDefault();
+        });
+        $(pagebar).find('.pdf-page-prev').click(function(e) {
+            renderPDF(pdf, element, pagebar, -1);
+            e.preventDefault();
+        });
     });
-    
-    // a call to put the contents of the pdf.js object into the canvases we prepared
-    function renderPDF() {
-        // if the element width hasn't changed, do nothing
-        if(elementWidth == $(element).width()) return;
-        // end wait timer for any other processes
-        clearTimeout(renderWaitTimer);
-        // if we are currently rendering pages
-        if(rendering) {
-            // set a flag to tell the renderer to quit
-            cancelRendering = true;
-            // wait 100ms and try again
-            renderWaitTimer = setTimeout(function(){renderPDF();}, 100);
+}
+
+function numberToLayout(number) {
+    switch(number) {
+        case 0:
+            return "one-page";
+        case 1:
+            return "two-page-odd";
+        case 2:
+            return "two-page-even";
+    }
+    return "error";
+}
+
+function setActiveLayout(pagebar, number) {
+    $(pagebar).find('.pdf-layout-single'     ).removeClass('active');
+    $(pagebar).find('.pdf-layout-double-odd' ).removeClass('active');
+    $(pagebar).find('.pdf-layout-double-even').removeClass('active');
+    switch(number) {
+        case 0:
+            $(pagebar).find('.pdf-layout-single').addClass('active');
+            break;
+        case 1:
+            $(pagebar).find('.pdf-layout-double-odd').addClass('active');
+            break;
+        case 2:
+            $(pagebar).find('.pdf-layout-double-even').addClass('active');
+    }
+}
+
+function renderPDF(pdf, element, pagebar, change) {
+    var numPages    = $(element).data('num-pages');
+    var currentPage = $(element).data('current-page');
+    var layout      = $(element).attr('class');
+    if(layout == 'one-page') {
+        currentPage += change;
+        if(currentPage < 1) currentPage = 1;
+    } else {
+        currentPage = 2*(Math.floor(currentPage/2)+change);
+        if(currentPage < 0) currentPage = 0;
+        if(layout == 'two-page-even') {
+            currentPage++;
+        }
+    }
+    console.log(currentPage);
+    if(currentPage > numPages) {
+        if(layout == 'one-page') {
+            currentPage = numPages;
+        } else if(layout == 'two-page-even') {
+            currentPage = 2*(Math.ceil(numPages/2))-1;
         } else {
-            //set the new element width
-            elementWidth = $(element).width();
-            // set the flag to say we are rendering
-            rendering = true;
-            // start the asynchronous render task with page 1
-            thePDF.getPage( 1 ).then( function(page) {drawPages(page, 1);} );
+            currentPage = 2*(Math.floor(numPages/2));
         }
     }
     
-    // recursive rendering task
-    function drawPages(page, pageNum) {
-        // check the cancel flag, and if it's true, stop rendering and clear flags
-        if(cancelRendering) {
-            cancelRendering = false;
-            rendering       = false;
-            return;
-        }
-        // get the canvas for this page as both a jQuery element and a DOM element
-        var canvasEl  = $(element).find('canvas:nth-child('+pageNum+')');
-        var canvas    = canvasEl[0];
-        // set the canvas native width to match computed width (x2 for retina)
-        canvas.width  = canvasEl.width()*2;
-        // compute the optimal viewport
-        var viewport  = getFitViewport(page, canvas);
-        // set height to proportional
-        canvas.height = viewport.height;
-        var context   = canvas.getContext('2d');
-        // clear the canvas
-        context.clearRect ( 0 , 0 , canvas.width , canvas.height );
-        // render the page in memory to the canvas
-        page.render({canvasContext: context,viewport: viewport});
-        // go to the next page
-        pageNum++;
-        // if we havent been cancelled, and there are more pages
-        if ( !cancelRendering && thePDF !== null && pageNum <= numPages ) {
-            // start the rendering task for the next page
-            thePDF.getPage( pageNum ).then( function(page) {drawPages(page, pageNum);} );
-        } else {
-            // clear flags, we're done rendering
-            cancelRendering = false;
-            rendering       = false;
-        }
+    $(pagebar).find('.pdf-page-num').text(currentPage+'/'+numPages);
+    
+    // cancel any current rendering
+    if(typeof pdfRenderingTask.cancel == 'function') {
+        pdfRenderingTask.cancel();
     }
     
-    // gets the pdf.js viewport necessary to fill the width of the supplied canvas
-    function getFitViewport(page, canvas) {
-        var initial = page.getViewport(1.0);
-        var ratioW = canvas.width  / initial.width;
-        // this code was to do fit to page, rather than fit to width
-        //var ratioH = canvas.height / initial.height;
-        //return( page.getViewport(Math.min(ratioW, ratioH)));
-        return( page.getViewport(ratioW));
+    // here is where we render the pages
+    $(element).html("");
+    $(element).append($('<canvas/>'),$('<canvas/>'));
+    var canvasSet   = $(element).find('canvas');
+    var leftCanvas  = canvasSet.first();
+    var rightCanvas = canvasSet.last();
+    var callback = function(){};
+    if((layout != 'one-page') && (currentPage < numPages)) {
+        callback = (function(canvas, pdf, page, callback) {
+            return function(){renderPage(canvas, pdf, page, callback);};
+        })(rightCanvas, pdf, currentPage+1, function(){});
     }
+    renderPage(leftCanvas, pdf, currentPage, callback);
+    $(element).data('current-page', currentPage);
+}
+
+function renderPage(canvas, pdf, page, callback) {
+    if(page == 0) {
+        callback();
+    } else {
+        $(canvas)[0].width = $(canvas).width()*2;
+        pdf.getPage( page ).then( function(page) {
+            var canvasDOM   = $(canvas)[0];
+            canvasDOM.width = $(canvas).width()*2;
+            var viewport  = getFitViewport(page, canvasDOM);
+            canvasDOM.height = viewport.height;
+            $(canvas).height(viewport.height/2);
+            var context   = canvasDOM.getContext('2d');
+            pdfRenderingTask = page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).then(function() {
+                callback();
+            });
+        });
+    }
+}
+
+// gets the pdf.js viewport necessary to fill the width of the supplied canvas
+function getFitViewport(page, canvas) {
+    var initial = page.getViewport(1.0);
+    var ratioW = canvas.width  / initial.width;
+    return( page.getViewport(ratioW));
 }

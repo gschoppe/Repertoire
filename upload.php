@@ -1,5 +1,7 @@
 <?php
 require_once("resources/core.php");
+$activeMenuItem = "Upload";
+
 if(isset($_POST) && $_POST) {
     if(!(isset($_POST['title'], $_POST['genre'], $_POST['rating']) && $_POST['title'] && $_POST['genre'] && $_POST['rating'])) {
         $message = array('type'=>'error', 'text'=>"Please complete all fields.", 'destructs'=>false);

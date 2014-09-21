@@ -7,12 +7,12 @@ if($areSongs) {
     <thead>
         <tr>
             <th data-class="expand">Title </th>
-            <th data-hide="phone">Artist</th>
+            <th data-hide="phone,tablet">Artist</th>
             <th data-hide="phone,tablet">Genre </th>
-            <th data-hide="phone,tablet">Views </th>
-            <th data-hide="phone,tablet">Rating</th>
+            <th data-hide="phone">Views </th>
+            <th data-hide="phone">Rating</th>
             <th data-hide="phone,tablet">Added </th>
-            <th>Tools </th>
+            <th data-hide="phone,tablet">Tools </th>
         </tr>
     </thead>
     <tbody>

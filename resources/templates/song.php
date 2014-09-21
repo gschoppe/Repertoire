@@ -61,13 +61,41 @@ if($song) {
 <?php
     } elseif($extension == 'pdf') {
 ?>
+    <div id="pdfControls">
+        <a class="pdf-layout-single"     >Single Page  </a>
+        <a class="pdf-layout-double-odd" >2 Page (Odd) </a>
+        <a class="pdf-layout-double-even">2 Page (Even)</a>
+        &nbsp;&nbsp;
+        <a class="pdf-page-prev" href="">&lt;</a>
+        <span class="pdf-page-num">&nbsp;/&nbsp;</span>
+        <a class="pdf-page-next" href="">&gt;</a>
+        
+    </div>
     <div id="theSongPdf"></div>
+    <script type="text/javascript" src="resources/libraries/stickyjs/jquery.sticky.js"></script>
     <script type="text/javascript" src="resources/libraries/pdf.js/build/pdf.min.js"></script>
     <script type="text/javascript" src="resources/libraries/drawpdf.js"></script>
     <script type="text/javascript">
+        function updateDefaultLayout(number) {
+            var formData = {
+                songID: "<?=print_DB($song->songID)?>",
+                layout:   number
+            };
+            $.ajax({
+                url : "ajax.php",
+                type: "POST",
+                data : formData
+            });
+        }
+        
         PDFJS.workerSrc = 'resources/libraries/pdf.js/build/pdf.worker.js';
         $(document).ready(function() {
-            drawPDF("#theSongPdf", "<?=print_DB(__FILES__.$song->location)?>");
+            var controlWidthRef = $('#pdfControls').before($('<div/>')).prev();
+            $('#pdfControls').sticky({
+                getWidthFrom: controlWidthRef,
+                responsiveWidth: true
+            });
+            initializePDF("#theSongPdf", '#pdfControls', "<?=print_DB(__FILES__.$song->location)?>", <?=intVal($song->defaultLayout)?>);
         });
     </script>
 <?php

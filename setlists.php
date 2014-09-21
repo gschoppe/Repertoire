@@ -1,5 +1,7 @@
 <?php
 require_once("resources/core.php");
+$activeMenuItem = "Set Lists";
+
 $songID = "";
 if(isset($_GET['songID']) && $_GET['songID'])
     $songID=$_GET['songID'];

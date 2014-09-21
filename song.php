@@ -10,12 +10,6 @@ if(isset($_GET['songID']) && $_GET['songID']) {
     if (!$song) {
         $message = array('type'=>'error', 'text'=>"Song ID $songID not found.", 'destructs'=>false);
     } else {
-        if(isset($_GET['zoom']) && $_GET['zoom']) {
-            $zoom = floatval($_GET['zoom']);
-            $query = "UPDATE music SET defaultZoom=".$db->escape($zoom)." WHERE songID='".$db->escape($songID)."'";
-            $db->query($query);
-            die();
-        }
         $views = $song->views+1;
         $query = "UPDATE music SET views=".$db->escape($views)." WHERE songID='".$db->escape($songID)."'";
         $db->query($query);

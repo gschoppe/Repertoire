@@ -1,5 +1,7 @@
 <?php
 require_once("resources/core.php");
+$activeMenuItem = "Home";
+
 if(isset($_GET['delete']) && $_GET['delete']) {
     $result = delete_song($_GET['delete']);
     if(!$result['success']) {

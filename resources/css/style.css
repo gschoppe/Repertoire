@@ -19,7 +19,7 @@
 body {
     margin: 0px;
     border-collapse: collapse;
-    font-family: "arial", sans-serif;
+    font-family: 'Open Sans', Arial, Helvetica, sans-serif;
     font-size: 16px;
     text-align:center;
     background-color: #fff;
@@ -27,7 +27,6 @@ body {
 
 a {
     text-decoration: none;
-    font-weight: bold;
 }
 
 a:link, a:visited {
@@ -39,7 +38,7 @@ a:hover, a:active {
 }
 
 pre {
-    max-width: 800px;
+    max-width: 960px;
     text-align:left;
     margin: 10px auto;
     padding: 10px 0;
@@ -52,11 +51,10 @@ pre {
 }
 
 #menu {
-    background-color:#ddd;
+    background-color:#fff;
     text-align: center;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #ccc;
     color: #aaa;
-    font-weight: bold;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -83,34 +81,30 @@ pre {
 #links li a, #zoomcontrols li a, #setcontrols li a {
     position: relative;
     display: inline-block;
-    padding: 1em .5em;
     min-width: 2em;
     min-height: 3em;
-    border-right: 1px solid #eee;
-    color: #666;
+    color: #222;
     cursor: pointer;
     margin: 0;
     vertical-align:top;
 }
+#links li a.active {
+    color: #F59A0A;
+}
+#links li a span, #zoomcontrols li a, #setcontrols li a {
+    padding: 1em .5em;
+    vertical-align: middle;
+}
+#links li a i {
+    font-size: 1.25em;
+    padding: .75em .25em;
+    vertical-align: middle;
+}
 #links li a:hover, #zoomcontrols li a:hover, #setcontrols li a:hover {
-    color: #ddd;
-    background-color: #666;
-}
-#links li a img {
-    position: absolute;
-    top: .75em;
-    left:.25em;
-    width: 1.5em;
-    height: 3em;
-    clip: rect(0,1.5em,1.5em,0);
-    z-index: 200;
-}
-#links li a:hover img {
-    clip: rect(1.5em,1.5em,3em,0);
-    margin-top:-1.5em;
+    color: #F59A0A;
 }
 #links li span.menutext {
-    padding-left: 1.5em;
+    padding-left: 0;
 }
 @media only screen and (max-width : 720px) {
     #links li span.menutext {
@@ -139,37 +133,13 @@ pre {
     padding: 1em 0;
 }
 
-#theSong {
-    max-width: 800px;
-    text-align:left;
-    margin: 10px auto;
-    padding: 10px 0;
-    font-family: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
-}
-#theSong .chord {
-    font-weight: bold;
-    color: darkblue;
-}
-
-#theSongPdf {
-    max-width: 100%;
-    width: 100%;
-    margin: 0 auto;
-}
-#theSongPdf canvas {
-    width: 100%;
-    border-bottom: 3px solid #000;
-}
-
 #main {
+    position: relative;
     width: 100%;
     margin:0px auto 10px auto;
-    padding: 10px;
-    border: 0px solid black;
+    padding: 0 10px;
     text-align:center;
     background-color: #fff;
-    border-left: 1px solid #444;
-    border-right: 1px solid #444;
 }
 #main table.upload {
     text-align: left;
@@ -193,6 +163,8 @@ pre {
 #main table a {
     display: inline-block;
     padding: 10px;
+    color: #F59A0A;
+    font-weight: bold;
 }
 
 .rating {
@@ -204,6 +176,94 @@ img.icon {
     width: auto;
     margin: 0;
     vertical-align:text-top;
+}
+
+#theSong {
+    max-width: 960px;
+    text-align:left;
+    margin: 10px auto;
+    padding: 10px 0;
+    font-family: Consolas, "Andale Mono WT", "Andale Mono", "Lucida Console", "Lucida Sans Typewriter", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Liberation Mono", "Nimbus Mono L", Monaco, "Courier New", Courier, monospace;
+}
+#theSong .chord {
+    font-weight: bold;
+    color: #F59A0A;
+}
+
+#pdfControls {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    margin: 0 auto;
+    background-color: #eee;
+    padding: 5px;
+    border-radius: 0 0 15px 15px;
+}
+#pdfControls .pdf-layout-single,
+#pdfControls .pdf-layout-double-even,
+#pdfControls .pdf-layout-double-odd {
+    display: inline-block;
+    width  : 31px;
+    height : 23px;
+    text-indent:-10000px;
+    background: url('../graphics/layouts.png') left top no-repeat;
+    border-radius: 3px; 
+    cursor: pointer;
+}
+#pdfControls .pdf-layout-single {
+    background-position: left top;
+}
+#pdfControls .pdf-layout-double-odd {
+    background-position: left center;
+}
+#pdfControls .pdf-layout-double-even {
+    background-position: left bottom;
+}
+#pdfControls .pdf-layout-single:hover,
+#pdfControls .pdf-layout-double-even:hover,
+#pdfControls .pdf-layout-double-odd:hover,
+#pdfControls .pdf-layout-single.active,
+#pdfControls .pdf-layout-double-even.active,
+#pdfControls .pdf-layout-double-odd.active {
+    background-color:  #F59A0A;
+}
+#pdfControls .pdf-layout-single:hover,
+#pdfControls .pdf-layout-single.active {
+    background-position: right top;
+}
+#pdfControls .pdf-layout-double-odd:hover,
+#pdfControls .pdf-layout-double-odd.active {
+    background-position: right center;
+}
+#pdfControls .pdf-layout-double-even:hover,
+#pdfControls .pdf-layout-double-even.active {
+    background-position: right bottom;
+}
+#pdfControls a {
+    display: inline-block;
+    width  : 31px;
+    height : 23px;
+    line-height: 23px;
+    font-weight: bold;
+    border-radius: 3px;
+}
+#pdfControls a:hover {
+background-color:  #F59A0A;
+color: #fff;
+}
+
+#theSongPdf {
+    width: 100%;
+    margin: 0 auto;
+}
+#theSongPdf canvas {
+    width: 100%;
+    height: 0;
+    display: inline-block;
+}
+#theSongPdf.two-page-even canvas, #theSongPdf.two-page-odd canvas {
+    width: 50%;
+    height: 1px;
 }
 
 .modal {

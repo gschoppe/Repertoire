@@ -139,3 +139,20 @@ if(isset($_POST['draw']) && ($_POST['draw'] || $_POST['draw']===0)) {
     echo json_encode($return);
     die();
 }
+
+// Song functions (zoom and layout)
+if(isset($_POST['songID']) && $_POST['songID']) {
+    $songID = $_POST['songID'];
+    if(isset($_POST['zoom']) && $_POST['zoom']) {
+        $zoom = floatval($_POST['zoom']);
+        $query = "UPDATE music SET defaultZoom=".$db->escape($zoom)." WHERE songID='".$db->escape($songID)."'";
+        $db->query($query);
+        die();
+    }
+    if(isset($_POST['layout'])) {
+        $layout = floatval($_POST['layout']);
+        $query = "UPDATE music SET defaultLayout=".$db->escape($layout)." WHERE songID='".$db->escape($songID)."'";
+        $db->query($query);
+        die();
+    }
+}

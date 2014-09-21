@@ -1,6 +1,6 @@
 <?php if( !defined( 'CORELOADED' ) ) die();?>
     <div id="author">
-        Repertoire &copy; Greg Schoppe <a href="http://www.gschoppe.com">http://www.gschoppe.com</a>
+        &copy; Repertoire <a href="http://www.getrepertoire.com">http://www.getrepertoire.com</a>
     </div>
 </body>
 </html>
